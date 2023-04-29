@@ -1,10 +1,9 @@
 #![feature(int_roundings)]
 
-use crate::algorithms::idee2::Idee2;
-use crate::algorithms::Algorithm;
+use crate::algorithm::Algorithm;
 use crate::parser::{parse, Bank, Challenge};
 
-pub mod algorithms;
+pub mod algorithm;
 pub mod output;
 pub mod parser;
 
@@ -12,37 +11,39 @@ fn main() {
 	let handle_a = std::thread::spawn(|| {
 		println!(
 			"a: {}",
-			Idee2::run(parse(include_str!("../challenges/a_example.txt"))).total_value
+			Algorithm::execute(parse(include_str!("../challenges/a_example.txt"))).total_value
 		)
 	});
 	let handle_b = std::thread::spawn(|| {
 		println!(
 			"b: {}",
-			Idee2::run(parse(include_str!("../challenges/b_read_on.txt"))).total_value
+			Algorithm::execute(parse(include_str!("../challenges/b_read_on.txt"))).total_value
 		)
 	});
 	let handle_c = std::thread::spawn(|| {
 		println!(
 			"c: {}",
-			Idee2::run(parse(include_str!("../challenges/c_incunabula.txt"))).total_value
+			Algorithm::execute(parse(include_str!("../challenges/c_incunabula.txt"))).total_value
 		)
 	});
 	let handle_d = std::thread::spawn(|| {
 		println!(
 			"d: {}",
-			Idee2::run(parse(include_str!("../challenges/d_tough_choices.txt"))).total_value
+			Algorithm::execute(parse(include_str!("../challenges/d_tough_choices.txt")))
+				.total_value
 		)
 	});
 	let handle_e = std::thread::spawn(|| {
 		println!(
 			"e: {}",
-			Idee2::run(parse(include_str!("../challenges/e_so_many_coins.txt"))).total_value
+			Algorithm::execute(parse(include_str!("../challenges/e_so_many_coins.txt")))
+				.total_value
 		)
 	});
 	let handle_f = std::thread::spawn(|| {
 		println!(
 			"f: {}",
-			Idee2::run(parse(include_str!(
+			Algorithm::execute(parse(include_str!(
 				"../challenges/f_banks_of_the_world.txt"
 			)))
 			.total_value
@@ -53,7 +54,7 @@ fn main() {
 	}
 	// println!(
 	// 	"{}",
-	// 	Idee2::run(Challenge {
+	// 	Algorithm::run(Challenge {
 	// 		days_to_scan: 7,
 	// 		coins: vec![12, 5, 8, 10, 9, 3, 2, 1, 4, 6],
 	// 		banks: vec![
@@ -86,7 +87,7 @@ fn main() {
 	// );
 	// println!(
 	// 	"{:#?}",
-	// 	Idee2::run(Challenge {
+	// 	Algorithm::run(Challenge {
 	// 		days_to_scan: 9,
 	// 		coins: vec![10, 14, 16, 2, 4, 12, 18, 6, 8, 20],
 	// 		banks: vec![
@@ -130,3 +131,10 @@ fn main() {
 	// 	})
 	// );
 }
+
+// fn main() {
+// 	println!(
+// 		"d: {}",
+// 		Algorithm::run(parse(include_str!("../challenges/d_tough_choices.txt"))).
+// total_value 	)
+// }
