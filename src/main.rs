@@ -1,5 +1,8 @@
+#![feature(int_roundings)]
+
 use algorithms::idee1::Idee1;
 
+use crate::algorithms::idee2::Idee2;
 use crate::algorithms::Algorithm;
 use crate::parser::{parse, Bank, Challenge};
 
@@ -11,7 +14,7 @@ fn main() {
 	Idee1::run(parse(include_str!("../challenges/b_read_on.txt")));
 	println!(
 		"{:#?}",
-		Idee1::run(Challenge {
+		Idee2::run(Challenge {
 			days_to_scan: 7,
 			coins: vec![12, 5, 8, 10, 9, 3, 2, 1, 4, 6],
 			banks: vec![
