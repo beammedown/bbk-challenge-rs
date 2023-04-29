@@ -62,7 +62,7 @@ impl Algorithm {
 							.map(|(i, _)| i)
 							.collect_vec();
 						let max_scanned_coins =
-							(b.scans_per_day * d).min(useful_coins.len() as u32);
+							b.scans_per_day.saturating_mul(d).min(useful_coins.len() as u32);
 						let days_working = max_scanned_coins.div_ceil(b.scans_per_day).min(d);
 						useful_coins.truncate(max_scanned_coins as usize);
 						let score = d as f32// * b.scans_per_day as f32
