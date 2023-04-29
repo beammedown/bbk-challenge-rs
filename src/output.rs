@@ -4,6 +4,8 @@ use crate::parser::{Bank, CoinIndex};
 
 #[derive(Debug)]
 pub struct Output {
-	pub registrations: Vec<(Bank, Vec<CoinIndex>)>,
+	pub registrations: Vec<(u32, Vec<CoinIndex>)>,
+	pub total_value: u32,
 	pub coins: HashSet<CoinIndex>,
+	pub maxscore: u32,
 }

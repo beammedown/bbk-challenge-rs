@@ -1,45 +1,55 @@
 use std::collections::HashSet;
 
 use itertools::Itertools;
+use rayon::prelude::{IndexedParallelIterator, IntoParallelRefIterator, ParallelIterator};
 
 use crate::output::Output;
 use crate::parser::Challenge;
 
-use super::Algorithm;
+pub struct Algorithm;
 
-pub struct Idee2;
-
-impl Algorithm for Idee2 {
-	fn run(challenge: Challenge) -> Output {
+impl Algorithm {
+	pub fn execute(challenge: Challenge) -> Output {
 		let mut total_coins = HashSet::new();
 		let mut total_days = 0;
 		let mut registrations = Vec::new();
 		let mut unregistrated_banks = challenge.banks.clone();
-		while total_days < challenge.days_to_scan {
-			let days_left = challenge.days_to_scan - total_days;
-			let coin_frequency = unregistrated_banks
-				.iter()
-				.flat_map(|b| {
-					b.coins
-						.iter()
-						.filter(|c| !total_coins.contains(*c))
-						.copied()
-				})
-				.counts();
-			let coin_worth = challenge
-				.coins
-				.iter()
-				.enumerate()
-				.map(|(index, &worth)| {
-					coin_frequency
-						.get(&(index as u32))
-						.map(|f| worth as f32 / *f as f32)
-						.unwrap_or(0.0)
-				})
-				.collect_vec();
 
-			let bank_order = unregistrated_banks
-				.iter()
+		let initial_coin_frequency = unregistrated_banks
+			.iter()
+			.flat_map(|b| b.coins.iter().copied())
+			.counts();
+
+		let mut coin_worth = challenge
+			.coins
+			.iter()
+			.enumerate()
+			.map(|(index, &worth)| {
+				initial_coin_frequency
+					.get(&(index as u32))
+					.map(|f| worth as f32 / (*f as f32 + 1.0))
+					.unwrap_or(0.0)
+			})
+			.collect_vec();
+
+		 let mut i = 0;
+		while total_days < challenge.days_to_scan {
+			 i += 1;
+			 if i % 100 == 0 {
+			 	print!(
+			 		"\r|{}>{}|  {}/{}",
+			 		"=".repeat((total_days * 20 / challenge.days_to_scan) as usize),
+			 		" ".repeat((20 - total_days * 20 / challenge.days_to_scan) as usize),
+			 		total_days,
+			 		challenge.days_to_scan
+			 	);
+			 	std::io::Write::flush(&mut std::io::stdout()).unwrap();
+			 }
+
+			let days_left = challenge.days_to_scan - total_days;
+
+			let Some(((i, bank, useful_coins), _)) = unregistrated_banks
+				.par_iter()
 				.enumerate()
 				.filter_map(|(i, b)| {
 					days_left.checked_sub(b.registration_time).map(|d| {
@@ -59,31 +69,35 @@ impl Algorithm for Idee2 {
 							* useful_coins
 								.iter()
 								.map(|c| coin_worth[*c as usize])
-								.sum::<f32>() * b.scans_per_day as f32;
+								.sum::<f32>();
 						((i, b, useful_coins), score)
 					})
-				})
-				.sorted_by_key(|(_, e)| -(*e as i32))
-				.map(|(b, _)| b)
-				.collect_vec();
+				}).max_by(|(_, a), (_, b)| a.total_cmp(b)) else {break;};
 
-			let Some((i, bank, useful_coins)) = bank_order.first() else {break;};
 			total_days += bank.registration_time;
 
 			total_coins.extend(useful_coins.iter().copied());
-			registrations.push(((*bank).clone(), useful_coins.clone()));
-			unregistrated_banks.remove(*i);
+			for coin in &useful_coins {
+				coin_worth[*coin as usize] = 0.0;
+			}
+			for coin in &bank.coins {
+				if !useful_coins.contains(&coin) {
+					coin_worth[*coin as usize] = challenge.coins[*coin as usize] as f32
+						/ (challenge.coins[*coin as usize] as f32 / coin_worth[*coin as usize]
+							- 1.0);
+				}
+			}
+			registrations.push((bank.index, useful_coins));
+			unregistrated_banks.swap_remove(i);
 		}
-		println!(
-			"Total worth: {}",
-			total_coins
-				.iter()
-				.map(|i| challenge.coins[*i as usize] as u32)
-				.sum::<u32>()
-		);
 		Output {
 			registrations,
+			total_value: total_coins
+				.iter()
+				.map(|i| challenge.coins[*i as usize] as u32)
+				.sum::<u32>(),
 			coins: total_coins,
+			maxscore: challenge.coins.iter().sum::<u16>() as u32,
 		}
 	}
 }
