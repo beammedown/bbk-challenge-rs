@@ -65,11 +65,11 @@ impl Algorithm {
 							(b.scans_per_day * d).min(useful_coins.len() as u32);
 						let days_working = max_scanned_coins.div_ceil(b.scans_per_day).min(d);
 						useful_coins.truncate(max_scanned_coins as usize);
-						let score = days_working as f32
+						let score = d as f32// * b.scans_per_day as f32
 							* useful_coins
 								.iter()
 								.map(|c| coin_worth[*c as usize])
-								.sum::<f32>();
+								.sum::<f32>() / (days_left - days_working) as f32;
 						((i, b, useful_coins), score)
 					})
 				}).max_by(|(_, a), (_, b)| a.total_cmp(b)) else {break;};
