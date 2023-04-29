@@ -47,15 +47,12 @@ impl Algorithm for Idee1 {
 			total_coins.extend(coins.iter().copied());
 			registrations.push((bank.clone(), coins));
 		}
-		println!(
-			"Total worth: {}",
-			total_coins
-				.iter()
-				.map(|i| challenge.coins[*i as usize] as u32)
-				.sum::<u32>()
-		);
 		Output {
 			registrations,
+			total_value: total_coins
+				.iter()
+				.map(|i| challenge.coins[*i as usize] as u32)
+				.sum::<u32>(),
 			coins: total_coins,
 		}
 	}
